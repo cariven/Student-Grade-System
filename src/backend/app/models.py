@@ -1,11 +1,13 @@
 import sqlite3
 import os
 
-DATABASE = os.environ.get("DATABASE", "database.db")
+
+def get_db_path():
+    return os.environ.get("DATABASE", "database.db")
 
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     return conn
 
