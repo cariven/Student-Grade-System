@@ -1,12 +1,16 @@
 # Student Grade System
 
-![CI Pipeline](https://img.shields.io/badge/CI-Pipeline-green) ![Coverage](https://img.shields.io/badge/coverage-%3E80%25-brightgreen) ![Python](https://img.shields.io/badge/Python-3.11%2B-blue) ![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react) ![License](https://img.shields.io/badge/license-MIT-green)
+[![CI Pipeline](https://github.com/cariven/Student-Grade-System/actions/workflows/ci.yml/badge.svg)](https://github.com/cariven/Student-Grade-System/actions)
+[![Coverage](https://codecov.io/gh/cariven/Student-Grade-System/branch/main/graph/badge.svg)](https://codecov.io/gh/cariven/Student-Grade-System)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![React](https://img.shields.io/badge/react-18-61dafb)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 Aplikasi web full-stack untuk mengelola nilai siswa (CRUD) — monorepo dengan backend Flask dan frontend React.
 
 ## Deskripsi Sistem
 
-Student Grade System memungkinkan guru/admin membuat siswa, memasukkan nilai (tugas, UTS, UAS), dan otomatis menghitung nilai akhir serta grade. Setiap pengguna (guru) hanya bisa melihat dan mengelola siswa & nilai miliknya sendiri.
+Student Grade System memungkinkan guru/admin mendaftarkan siswa, memasukkan nilai (tugas, UTS, UAS), dan otomatis menghitung nilai akhir serta grade. Setiap pengguna (guru) hanya bisa melihat dan mengelola siswa & nilai miliknya sendiri.
 
 Akses dilindungi autentikasi JWT — setiap request ke endpoint siswa dan nilai memerlukan token yang valid.
 
@@ -87,7 +91,7 @@ Buat file `.env` di root dan `src/frontend/.env`:
 | `JWT_SECRET_KEY` | Secret key untuk JWT — wajib diganti di production | `your-secret-key-min-32-chars` |
 | `VITE_API_BASE_URL` | Base URL backend API | `http://localhost:5000` |
 
-⚠️ Jangan pernah commit nilai `JWT_SECRET_KEY` yang sebenarnya ke repository.
+> Jangan pernah commit nilai `JWT_SECRET_KEY` yang sebenarnya ke repository.
 
 ### Backend
 
@@ -267,10 +271,3 @@ Nilai `grade` yang valid: A, B, C, D, E (berdasarkan range nilai final).
 | `PermissionError` | 403 | Siswa/grade milik guru lain |
 | JWT tidak valid / kedaluwarsa | 401 | Autentikasi gagal |
 
-## Kontribusi
-
-Kami menerima kontribusi dari siapa saja! Ikuti [CONTRIBUTING.md](CONTRIBUTING.md) untuk detail.
-
-## Lisensi
-
-Proyek ini dilisensikan di bawah **MIT License** — lihat file [LICENSE](LICENSE) untuk detail lengkapnya.
