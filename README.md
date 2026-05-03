@@ -1,219 +1,212 @@
 # Student Grade System
 
-Sistem manajemen nilai siswa berbasis web yang memungkinkan guru atau admin untuk mengelola data siswa dan melacak nilai mereka dengan mudah. Aplikasi ini dibangun dengan teknologi modern dan arsitektur full-stack.
+![CI Pipeline](https://img.shields.io/badge/CI-Pipeline-green) ![Coverage](https://img.shields.io/badge/coverage-%3E80%25-brightgreen) ![Python](https://img.shields.io/badge/Python-3.11%2B-blue) ![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react) ![License](https://img.shields.io/badge/license-MIT-green)
 
-## 🎯 Fitur Utama
+Aplikasi web full-stack untuk mengelola nilai siswa (CRUD) — monorepo dengan backend Flask dan frontend React.
 
-- **Autentikasi Pengguna**: Sistem login aman menggunakan JWT dan bcrypt password hashing
-- **Manajemen Data Siswa**: Tambah, hapus, dan lihat data siswa dengan mudah
-- **Tracking Nilai**: Catat nilai dari berbagai komponen (Tugas, UTS, UAS)
-- **Kalkulasi Otomatis**: Nilai akhir dihitung secara otomatis dari komponen nilai
-- **Grading System**: Konversi nilai menjadi huruf grade (A, B, C, D, E)
-- **Kontrol Akses**: Setiap pengguna hanya bisa melihat data siswa mereka sendiri
-- **API REST**: Endpoint API yang lengkap untuk integrasi
+## Deskripsi Sistem
 
-## 🛠️ Teknologi yang Digunakan
+Student Grade System memungkinkan guru/admin membuat siswa, memasukkan nilai (tugas, UTS, UAS), dan otomatis menghitung nilai akhir serta grade. Setiap pengguna (guru) hanya bisa melihat dan mengelola siswa & nilai miliknya sendiri.
+
+Akses dilindungi autentikasi JWT — setiap request ke endpoint siswa dan nilai memerlukan token yang valid.
+
+## Arsitektur Aplikasi
+
+```
+student-grade-system/
+├── src/
+│   ├── backend/app/          # Flask REST API
+│   │   ├── __init__.py       # Inisialisasi Flask, CORS, error handler global
+│   │   ├── models.py         # StudentRepository — query SQLite (users, students, grades)
+│   │   ├── routes.py         # StudentController — endpoint siswa, nilai + JWT middleware
+│   │   ├── services.py       # StudentService — logika bisnis, kalkulasi grade
+│   │   ├── validators.py     # Validasi input (name, grades, email, password)
+│   │   ├── auth_routes.py    # Endpoint /auth/register dan /auth/login
+│   │   └── auth_service.py   # Logika autentikasi, JWT HS256, bcrypt
+│   └── frontend/             # React + Vite
+│       ├── api/apiClient.js  # Semua HTTP request ke backend
+│       ├── components/       # StudentList, StudentCard, GradeForm, GradeBadge
+│       │                     # LoginForm, RegisterForm
+│       ├── App.jsx           # Root component, auth state, view toggle
+│       └── main.jsx
+├── tests/
+│   ├── backend/
+│   │   ├── conftest.py       # Fixtures: test client, SQLite in-memory
+│   │   ├── unit/             # Unit test: validators, auth_service, services, models
+│   │   └── integration/      # Integration test: auth routes, student/grade routes
+│   └── frontend/             # Vitest: semua komponen + ApiClient
+├── .github/workflows/ci.yml  # GitHub Actions CI/CD
+├── requirements.txt
+├── package.json
+└── pytest.ini
+```
+
+## Alur Request Backend
+
+```
+Browser / ApiClient (HTTP)
+         │
+         ▼
+StudentController (routes.py)    ← Routing, parsing, format JSON
+         │
+         ▼
+StudentService   (services.py)   ← Aturan bisnis, orkestrasi, kalkulasi grade
+         │         ↘
+         │     Validator (validators.py)
+         ▼
+StudentRepository (models.py)    ← Query SQL ke SQLite
+         │
+         ▼
+    SQLite DB (database.db)
+```
+
+## Stack Teknologi
+
+| Bagian | Teknologi |
+|--------|-----------|
+| Backend | Python 3.11, Flask, SQLite |
+| Frontend | React 18, Vite |
+| Autentikasi | JWT HS256 (PyJWT), bcrypt |
+| Backend Tests | pytest, pytest-cov, pytest-mock, Hypothesis |
+| Frontend Tests | Vitest, fast-check, Testing Library |
+| CI/CD | GitHub Actions |
+
+## Menjalankan Aplikasi
+
+### Prasyarat
+
+- Python 3.11+
+- Node.js 16+
+
+### Environment Variables
+
+Buat file `.env` di root dan `src/frontend/.env`:
+
+| Variabel | Deskripsi | Contoh |
+|----------|-----------|--------|
+| `JWT_SECRET_KEY` | Secret key untuk JWT — wajib diganti di production | `your-secret-key-min-32-chars` |
+| `VITE_API_BASE_URL` | Base URL backend API | `http://localhost:5000` |
+
+⚠️ Jangan pernah commit nilai `JWT_SECRET_KEY` yang sebenarnya ke repository.
 
 ### Backend
-- **Python 3.x** - Bahasa pemrograman
-- **Flask 3.0.0** - Web framework
-- **Flask-JWT-Extended** - Autentikasi JWT
-- **bcrypt** - Password hashing
-- **Flask-CORS** - Cross-Origin Resource Sharing
-- **SQLite** - Database
-
-### Frontend
-- **React 18.0** - UI library
-- **Vite 5.0** - Build tool
-- **React Router 7.14** - Navigation
-- **Node.js** - Runtime environment
-
-### Testing
-- **pytest** - Unit testing untuk backend
-- **pytest-cov** - Code coverage
-- **vitest** - Testing untuk frontend
-- **hypothesis** - Property-based testing
-
-## 📋 Prasyarat Instalasi
-
-Sebelum memulai, pastikan Anda memiliki:
-
-- **Python 3.8+** (untuk backend)
-- **Node.js 16+** dan **npm** (untuk frontend)
-- **Git** (untuk cloning repository)
-- **pip** (Python package manager, biasanya sudah tersedia dengan Python)
-
-## 📁 Struktur Project
-
-```
-Student-Grade-System/
-├── src/
-│   ├── backend/
-│   │   └── app/
-│   │       ├── __init__.py           # Flask app initialization
-│   │       ├── models.py             # Database models & queries
-│   │       ├── routes.py             # Main API endpoints
-│   │       ├── auth_routes.py        # Authentication endpoints
-│   │       ├── auth_service.py       # Auth business logic
-│   │       ├── services.py           # Helper services
-│   │       └── validators.py         # Input validation
-│   └── frontend/
-│       ├── src/                      # React components
-│       ├── public/                   # Static assets
-│       └── package.json              # Frontend dependencies
-├── tests/                            # Test files
-├── requirements.txt                  # Python dependencies
-├── package.json                      # Root dependencies
-├── pytest.ini                        # Pytest configuration
-├── .coveragerc                       # Coverage configuration
-├── run.py                            # Entry point untuk backend
-└── README.md                         # Documentation
-```
-
-## 🚀 Instalasi dan Setup
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/cariven/Student-Grade-System.git
-cd Student-Grade-System
-```
-
-### 2. Setup Backend
-
-#### Buat Virtual Environment
-
-```bash
-# Di Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Di macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-#### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
+PYTHONPATH=src/backend python run.py
 ```
 
-#### Setup Environment Variables
+Backend berjalan di `http://localhost:5000`.
 
-Buat file `.env` di root directory (atau set langsung):
-
-```bash
-# Windows
-set JWT_SECRET_KEY=kunci-rahasia-yang-panjang-dan-aman-minimal-32-karakter
-set DATABASE=database.db
-
-# macOS/Linux
-export JWT_SECRET_KEY=kunci-rahasia-yang-panjang-dan-aman-minimal-32-karakter
-export DATABASE=database.db
-```
-
-### 3. Setup Frontend
+### Frontend
 
 ```bash
-cd src/frontend
 npm install
-```
-
-## 💻 Cara Menggunakan
-
-### Menjalankan Backend
-
-```bash
-# Dari root directory (virtual environment sudah aktif)
-python run.py
-```
-
-Backend akan berjalan di `http://localhost:5000`
-
-### Menjalankan Frontend
-
-```bash
-# Dari directory src/frontend
 npm run dev
 ```
 
-Frontend akan berjalan di `http://localhost:5173`
+Frontend berjalan di `http://localhost:5173`.
 
-### Menjalankan Tests
+## Menjalankan Tests
 
-#### Backend Tests
-
-```bash
-# Dari root directory
-pytest
-```
-
-Dengan coverage report:
+### Backend
 
 ```bash
-pytest --cov=src --cov-report=html
+# Semua test backend dengan coverage
+PYTHONPATH=src/backend pytest --cov=app --cov-report=term-missing
 ```
 
-#### Frontend Tests
+### Frontend
 
 ```bash
-# Dari src/frontend directory
-npm test
+# Single run (tanpa watch mode)
+npm run test
 ```
 
-## 📖 Contoh Penggunaan
+## Strategi Pengujian
 
-### 1. Registrasi Pengguna
+### Unit Tests (Backend)
+
+Menguji logika bisnis secara terisolasi — tanpa database atau HTTP call. Menggunakan pytest-mock.
+
+- **Target:** StudentService, AuthService, Validator, StudentRepository
+- **Cakupan:** perilaku normal, edge case, dan error handling
+
+### Integration Tests (Backend)
+
+Menguji seluruh alur HTTP → Service → Database menggunakan SQLite in-memory.
+
+- **Target:** semua endpoint REST API (`/students`, `/grades`, `/auth/register`, `/auth/login`)
+- **Cakupan:** semua operasi CRUD, autentikasi, ownership check, dan respons error
+
+### Property-Based Tests
+
+Menggunakan Hypothesis (backend) dan fast-check (frontend) untuk memverifikasi properti kebenaran sistem dengan ratusan input yang di-generate otomatis.
+
+Contoh properti yang diuji:
+
+- Nama siswa valid selalu menghasilkan siswa dengan created_at valid
+- String whitespace-only atau kosong selalu ditolak validator
+- Grade yang dihitung selalu sesuai rumus: (tugas×20% + uts×30% + uas×50%)
+- Siswa yang dihapus tidak bisa diakses lagi (HTTP 404)
+- N siswa di database → GET /students selalu mengembalikan tepat N elemen
+- Grade letter selalu sesuai range nilai (A: 80-100, B: 70-79, C: 60-69, D: 50-59, E: <50)
+
+### Frontend Tests
+
+Menggunakan Vitest + Testing Library dengan mock ApiClient.
+
+- **Cakupan:** semua komponen React (StudentList, StudentCard, GradeForm, GradeBadge, LoginForm, RegisterForm, App)
+- **Property test dengan fast-check untuk validasi perilaku komponen**
+
+## Test Coverage
+
+Target coverage: **100%** pada seluruh kode backend (`src/backend/app/`).
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "guru@example.com",
-    "password": "password123"
-  }'
+PYTHONPATH=src/backend pytest --cov=app --cov-report=term-missing --cov-report=html
 ```
 
-Response:
-```json
-{
-  "message": "User registered successfully",
-  "user_id": 1
-}
+Konfigurasi di `pytest.ini`:
+
+```ini
+[pytest]
+testpaths = tests/backend
+addopts = --cov=app --cov-report=term-missing
 ```
 
-### 2. Login
+## CI Pipeline
 
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "guru@example.com",
-    "password": "password123"
-  }'
+Pipeline otomatis berjalan di GitHub Actions pada setiap push dan pull request.
+
+```
+Push / Pull Request
+        │
+        ├── test-backend ──── Install deps → Validate import → pytest + coverage
+        │
+        └── test-frontend ─── Install deps → Build → Vitest
+                │
+                └── (kedua job lulus)
+                        │
+                        └── release (tag release*) ── Buat GitHub Release + tarball
 ```
 
-Response:
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user_id": 1
-}
-```
+| Job | Trigger | Aksi |
+|-----|---------|------|
+| `test-backend` | Semua push & PR | Install Python deps, validasi import, jalankan pytest + coverage |
+| `test-frontend` | Semua push & PR | Install Node deps, build frontend, jalankan Vitest |
+| `release` | Tag `release*` (setelah test lulus) | Buat GitHub Release dengan tarball |
 
-### 3. Tambah Siswa
+## Dokumentasi API
 
-```bash
-curl -X POST http://localhost:5000/api/students \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {access_token}" \
-  -d '{
-    "name": "Budi Santoso"
-  }'
-```
+**Base URL:** `http://localhost:5000`
 
-Response:
+Semua respons menggunakan `Content-Type: application/json`.
+
+Endpoint siswa dan nilai memerlukan header `Authorization: Bearer <token>`.
+
+### Model Student
+
 ```json
 {
   "id": 1,
@@ -223,25 +216,13 @@ Response:
 }
 ```
 
-### 4. Input Nilai Siswa
+### Model Grade
 
-```bash
-curl -X POST http://localhost:5000/api/grades \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {access_token}" \
-  -d '{
-    "student_id": 1,
-    "tugas": 85,
-    "uts": 80,
-    "uas": 78
-  }'
-```
-
-Response:
 ```json
 {
   "id": 1,
   "student_id": 1,
+  "user_id": 1,
   "tugas": 85,
   "uts": 80,
   "uas": 78,
@@ -251,92 +232,45 @@ Response:
 }
 ```
 
-### 5. Lihat Daftar Siswa
+Nilai `grade` yang valid: A, B, C, D, E (berdasarkan range nilai final).
 
-```bash
-curl -X GET http://localhost:5000/api/students \
-  -H "Authorization: Bearer {access_token}"
-```
+### Auth Endpoints
 
-### 6. Lihat Nilai Siswa
+| Method | Path | Deskripsi | Status Sukses |
+|--------|------|-----------|---------------|
+| `POST` | `/auth/register` | Daftar akun baru | 201 |
+| `POST` | `/auth/login` | Login, dapatkan JWT | 200 |
 
-```bash
-curl -X GET http://localhost:5000/api/students/1/grades \
-  -H "Authorization: Bearer {access_token}"
-```
+### Student Endpoints (Protected)
 
-## 🤝 Kontribusi
+| Method | Path | Deskripsi | Status Sukses |
+|--------|------|-----------|---------------|
+| `POST` | `/students` | Buat siswa baru | 201 |
+| `GET` | `/students` | Ambil semua siswa milik guru | 200 |
+| `GET` | `/students/{id}` | Ambil siswa by ID | 200 |
+| `DELETE` | `/students/{id}` | Hapus siswa | 200 |
 
-Kami menerima kontribusi dari siapa saja! Berikut cara berkontribusi:
+### Grade Endpoints (Protected)
 
-### Langkah-Langkah Kontribusi
+| Method | Path | Deskripsi | Status Sukses |
+|--------|------|-----------|---------------|
+| `POST` | `/grades` | Buat/input grade siswa | 201 |
+| `GET` | `/students/{id}/grades` | Ambil semua grade siswa | 200 |
+| `DELETE` | `/grades/{id}` | Hapus grade | 200 |
 
-1. **Fork Repository**
-   ```bash
-   Klik tombol "Fork" di halaman repository
-   ```
+## Penanganan Error
 
-2. **Clone Repository Forked Anda**
-   ```bash
-   git clone https://github.com/username-anda/Student-Grade-System.git
-   cd Student-Grade-System
-   ```
+| Exception | HTTP Status | Keterangan |
+|-----------|-------------|-----------|
+| `ValueError` | 400 | Input tidak valid |
+| `StudentNotFoundError` | 404 | Siswa tidak ditemukan |
+| `PermissionError` | 403 | Siswa/grade milik guru lain |
+| JWT tidak valid / kedaluwarsa | 401 | Autentikasi gagal |
 
-3. **Buat Branch Baru**
-   ```bash
-   git checkout -b feature/nama-fitur-anda
-   ```
+## Kontribusi
 
-4. **Buat Perubahan**
-   - Pastikan kode Anda mengikuti style guide yang ada
-   - Tambahkan test untuk fitur baru
-   - Update dokumentasi jika diperlukan
+Kami menerima kontribusi dari siapa saja! Ikuti [CONTRIBUTING.md](CONTRIBUTING.md) untuk detail.
 
-5. **Commit Perubahan**
-   ```bash
-   git add .
-   git commit -m "Deskripsi perubahan yang jelas dan ringkas"
-   ```
+## Lisensi
 
-6. **Push ke Branch**
-   ```bash
-   git push origin feature/nama-fitur-anda
-   ```
-
-7. **Buat Pull Request**
-   - Buka repository di GitHub
-   - Klik "New Pull Request"
-   - Pilih branch Anda dan tulis deskripsi yang detail
-
-### Guidelines Pengembangan
-
-- **Naming Convention**: Gunakan snake_case untuk Python, camelCase untuk JavaScript
-- **Code Style**: Ikuti PEP 8 untuk Python
-- **Testing**: Pastikan semua test lolos sebelum submit PR
-- **Dokumentasi**: Update README dan docstrings jika menambah fitur baru
-- **Commit Message**: Gunakan pesan yang deskriptif dan jelas
-
-## 📄 Lisensi
-
-Proyek ini dilisensikan di bawah **MIT License** - lihat file [LICENSE](LICENSE) untuk detail lengkapnya.
-
-### MIT License Summary
-
-Anda bebas untuk:
-- ✅ Menggunakan, mempelajari, dan mengubah kode
-- ✅ Mendistribusikan dan menggunakan kode secara komersial
-- ✅ Menggunakan secara pribadi
-
-Dengan syarat:
-- ℹ️ Sertakan pemberitahuan lisensi dan copyright
-- ℹ️ Lampirkan file LICENSE dengan distribusi
-
-Tanpa tanggung jawab atau garansi apapun.
-
----
-
-**Dibuat oleh**: [cariven](https://github.com/cariven)
-
-**Dibuat pada**: 2026-05-03
-
-Jika ada pertanyaan atau butuh bantuan, silakan buka [Issue](https://github.com/cariven/Student-Grade-System/issues) baru!
+Proyek ini dilisensikan di bawah **MIT License** — lihat file [LICENSE](LICENSE) untuk detail lengkapnya.
