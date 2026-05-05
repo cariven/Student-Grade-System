@@ -28,6 +28,12 @@ def create_app(config=None):
     with app.app_context():
         init_db()
 
+    _register_error_handlers(app)
+
+    return app
+
+
+def _register_error_handlers(app):
     @app.errorhandler(ValueError)
     def handle_value_error(e):
         return jsonify({"error": str(e)}), 400
@@ -42,8 +48,5 @@ def create_app(config=None):
             return jsonify({"error": e.description}), e.code
         return jsonify({"error": "Terjadi kesalahan internal pada server"}), 500
 
-    return app
 
-
-# Untuk backward compatibility dengan run.py
 app = create_app()

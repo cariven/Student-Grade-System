@@ -51,3 +51,23 @@ def test_login_returns_user_dict(app):
         assert isinstance(user, dict)
         assert "id" in user
         assert "password_hash" in user
+
+
+
+def test_fetch_user_by_id_exists(app):
+    """Cover fetch_user_by_id dengan user valid (line 72-75)."""
+    from src.backend.app.models import insert_user, fetch_user_by_id
+    with app.app_context():
+        uid = insert_user("fetchbyid@test.com", "hashed_pwd", "2026-01-01T00:00:00")
+        user = fetch_user_by_id(uid)
+        assert user is not None
+        assert user["email"] == "fetchbyid@test.com"
+        assert user["id"] == uid
+
+
+def test_fetch_user_by_id_not_found(app):
+    """Cover fetch_user_by_id dengan id tidak ada → None."""
+    from src.backend.app.models import fetch_user_by_id
+    with app.app_context():
+        user = fetch_user_by_id(99999)
+        assert user is None

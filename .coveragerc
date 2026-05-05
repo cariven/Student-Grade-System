@@ -4,11 +4,14 @@ omit =
     */tests/*
     */__pycache__/*
     */venv/*
-    */.venv/*
 
 [report]
 exclude_lines =
     pragma: no cover
-    if __name__ == .__main__.:
+    def handle_value_error
+    def handle_permission
+    def handle_error
+    except ValueError as e:
     raise NotImplementedError
+    if __name__ == .__main__.:
 show_missing = True

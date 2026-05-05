@@ -78,3 +78,124 @@ def test_delete_student_forbidden(client, auth_headers):
     res = client.delete(f"/students/{student_id}",
                         headers={"Authorization": f"Bearer {user2_token}"})
     assert res.status_code == 403
+
+
+
+# ================================================================
+# Coverage 100%: Cover __init__.py line 33, 37, 41-43 (error handlers)
+# ================================================================
+
+def test_value_error_handler_via_duplicate_register(client):
+    """Trigger @app.errorhandler(ValueError) di __init__.py line 33."""
+    # Register pertama — sukses
+    client.post("/auth/register", json={
+        "email": "valerrhandler@test.com",
+        "password": "password123"
+    })
+    # Register kedua dengan email sama → ValueError → error handler return 400
+    res = client.post("/auth/register", json={
+        "email": "valerrhandler@test.com",
+        "password": "password123"
+    })
+    assert res.status_code == 400
+    assert "error" in res.get_json()
+
+
+def test_permission_error_handler(client, monkeypatch):
+    """Trigger @app.errorhandler(PermissionError) di __init__.py line 37."""
+    from src.backend.app import routes
+
+    def raise_permission_error(*args, **kwargs):
+        raise PermissionError("Akses ditolak dari test")
+
+    # Override fetch_all_students → raise PermissionError
+    monkeypatch.setattr(routes, "fetch_all_students", raise_permission_error)
+
+    # Register & login
+    client.post("/auth/register", json={
+        "email": "permerr@test.com",
+        "password": "password123"
+    })
+    login_res = client.post("/auth/login", json={
+        "email": "permerr@test.com",
+        "password": "password123"
+    })
+    token = login_res.get_json()["token"]
+
+    # GET /students → PermissionError → handler 403
+    res = client.get("/students",
+                     headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 403
+
+
+def test_http_exception_handler_404(client):
+    """Trigger HTTPException branch di __init__.py line 41-42."""
+    res = client.get("/url-yang-tidak-ada-xyz-12345")
+    assert res.status_code == 404
+    assert "error" in res.get_json()
+
+
+def test_generic_exception_handler_500(client, monkeypatch):
+    """Trigger generic Exception branch di __init__.py line 43 → 500."""
+    from src.backend.app import routes
+
+    def broken_db(*args, **kwargs):
+        raise RuntimeError("Database broken unexpectedly!")
+
+    monkeypatch.setattr(routes, "fetch_all_students", broken_db)
+
+    # Register & login
+    client.post("/auth/register", json={
+        "email": "exc500test@test.com",
+        "password": "password123"
+    })
+    login_res = client.post("/auth/login", json={
+        "email": "exc500test@test.com",
+        "password": "password123"
+    })
+    token = login_res.get_json()["token"]
+
+    res = client.get("/students",
+                     headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 500
+    assert "error" in res.get_json()
+
+
+
+# ================================================================
+# Coverage 100%: Force trigger handle_value_error di __init__.py line 33
+# ================================================================
+
+def test_force_trigger_value_error_handler_via_grade(client, monkeypatch):
+    """Force raise ValueError dari route untuk trigger error handler global."""
+    from src.backend.app import routes
+
+    def raise_value_error(*args, **kwargs):
+        raise ValueError("Forced ValueError for coverage test")
+
+    # Patch fetch_student_by_id → raise ValueError saat POST /grades
+    monkeypatch.setattr(routes, "fetch_student_by_id", raise_value_error)
+
+    # Register & login
+    client.post("/auth/register", json={
+        "email": "valerrforce@test.com",
+        "password": "password123"
+    })
+    login_res = client.post("/auth/login", json={
+        "email": "valerrforce@test.com",
+        "password": "password123"
+    })
+    token = login_res.get_json()["token"]
+
+    # Bikin student
+    student_res = client.post("/students", json={"name": "Test"},
+                              headers={"Authorization": f"Bearer {token}"})
+    sid = student_res.get_json()["id"]
+
+    # POST /grades → fetch_student_by_id raise ValueError → handler 400
+    res = client.post("/grades", json={
+        "student_id": sid, "tugas": 80, "uts": 80, "uas": 80
+    }, headers={"Authorization": f"Bearer {token}"})
+    
+    assert res.status_code == 400
+    assert "error" in res.get_json()

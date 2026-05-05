@@ -34,6 +34,11 @@ def login():
     except ValidationError as e:
         return jsonify({"error": str(e)}), 400
 
+    # Login wrapper — pasti trigger except ValueError di test
+    return _do_login(email, password)
+
+
+def _do_login(email, password):
     try:
         user = login_user(email, password)
     except ValueError as e:
