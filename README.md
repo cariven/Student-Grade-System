@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/react-18-61dafb)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-Aplikasi web full-stack untuk mengelola nilai siswa (CRUD) — monorepo dengan backend Flask dan frontend React.
+Aplikasi web full-stack untuk mengelola nilai siswa (CRUD) — monorepo dengan backend Flask dan frontend React...
 
 ## Deskripsi Sistem
 
